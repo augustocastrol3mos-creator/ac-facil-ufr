@@ -60,12 +60,30 @@ export default function StepStudent({ data, onChange, onNext }: Props) {
               <p style={{ fontSize: "12px", color: "#64748b", marginTop: "6px" }}>12 dígitos. Os 4 primeiros representam o ano de matrícula.</p>
             )}
           </div>
-          <div style={{ padding: "12px 14px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "7px", display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#20376B", flexShrink: 0 }} />
-            <div>
-              <p style={{ fontSize: "10px", fontWeight: "700", color: "#64748b", letterSpacing: "0.05em" }}>CURSO</p>
-              <p style={{ fontSize: "13px", fontWeight: "600", color: "#1D1D1B" }}>Administração — UFR</p>
+          {/* Curso — campo bloqueado */}
+          <div>
+            <label style={lbl}>CURSO</label>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", background: "#F9FAFB", border: "1.5px solid #e2e8f0", borderRadius: "7px", cursor: "not-allowed" }}>
+              <span style={{ fontSize: "15px", color: "#1D1D1B" }}>Administração — UFR</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, color: "#94a3b8" }}>
+                <rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
             </div>
+            <p style={{ fontSize: "12px", color: "#64748b", marginTop: "6px" }}>Definido pelo administrador. Para alterar, entre em contato com o coordenador.</p>
+          </div>
+
+          {/* Aviso de privacidade — LGPD */}
+          <div style={{ display: "flex", gap: "9px", alignItems: "flex-start", padding: "11px 13px", background: "#F8FAFC", border: "1px solid #e2e8f0", borderRadius: "7px" }}>
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginTop: "1px", color: "#64748b" }}>
+              <rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+              <path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            <p style={{ fontSize: "11.5px", color: "#64748b", lineHeight: "1.6" }}>
+              <strong style={{ color: "#475569" }}>Privacidade.</strong> Seu nome, matrícula e comprovantes são usados apenas para
+              montar o PDF nesta sessão e <strong>não são armazenados</strong> pelo sistema. O registro interno de gerações
+              guarda somente créditos e horas, sem qualquer dado que identifique o estudante.
+            </p>
           </div>
         </div>
         <div style={{ padding: "14px 20px", borderTop: "1px solid #e2e8f0", background: "#f8fafc", display: "flex", justifyContent: "flex-end" }}>

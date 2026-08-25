@@ -14,6 +14,28 @@ type Props = {
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 15 }, (_, i) => CURRENT_YEAR - i);
 
+// Limite por anexo. Arquivos viram base64 no corpo da requisição,
+// então o limite protege tanto o navegador quanto o servidor.
+const MAX_FILE_MB = 5;
+const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
+const ALLOWED_EXT = [".pdf", ".jpg", ".jpeg", ".png"];
+
+/** Retorna mensagem de erro, ou null se o arquivo estiver ok. */
+function validateFile(file: File): string | null {
+  const name = file.name.toLowerCase();
+  if (!ALLOWED_EXT.some(ext => name.endsWith(ext))) {
+    return `Formato não aceito. Use PDF, JPG ou PNG.`;
+  }
+  if (file.size > MAX_FILE_BYTES) {
+    const mb = (file.size / 1024 / 1024).toFixed(1);
+    return `O arquivo "${file.name}" tem ${mb} MB. O limite é ${MAX_FILE_MB} MB por comprovante — reduza a qualidade do escaneamento ou comprima o PDF.`;
+  }
+  if (file.size === 0) {
+    return `O arquivo "${file.name}" está vazio.`;
+  }
+  return null;
+}
+
 function readFileAsBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -49,6 +71,9 @@ export default function StepActivities({ autonomous, guided, onChangeAutonomous,
       onChangeAutonomous(autonomous.map(a => a.id === id ? { ...a, fileName: undefined, fileData: undefined, fileMime: undefined } : a));
       return;
     }
+    const fileErr = validateFile(file);
+    if (fileErr) { setError(fileErr); return; }
+    setError("");
     const fileData = await readFileAsBase64(file);
     // Update all file fields in a single state update to avoid race conditions
     onChangeAutonomous(autonomous.map(a =>
@@ -67,6 +92,9 @@ export default function StepActivities({ autonomous, guided, onChangeAutonomous,
       onChangeGuided(guided.map(g => g.id === id ? { ...g, fileName: undefined, fileData: undefined, fileMime: undefined } : g));
       return;
     }
+    const fileErr = validateFile(file);
+    if (fileErr) { setError(fileErr); return; }
+    setError("");
     const fileData = await readFileAsBase64(file);
     onChangeGuided(guided.map(g =>
       g.id === id ? { ...g, fileName: file.name, fileData, fileMime: file.type || "application/pdf" } : g
@@ -245,7 +273,7 @@ export default function StepActivities({ autonomous, guided, onChangeAutonomous,
                           <label style={lbl}>COMPROVANTE {requireAttachment
                             ? <span style={{ color: "#dc2626" }}>*</span>
                             : <span style={{ fontWeight: "400", color: "#94a3b8", textTransform: "none", letterSpacing: 0, fontSize: "11px" }}>(opcional)</span>}
-                            {" "}<span style={{ fontWeight: "400", color: "#94a3b8", textTransform: "none", letterSpacing: 0, fontSize: "11px" }}>— incluso no PDF</span>
+                            {" "}<span style={{ fontWeight: "400", color: "#94a3b8", textTransform: "none", letterSpacing: 0, fontSize: "11px" }}>— incluso no PDF · máx. {MAX_FILE_MB} MB</span>
                           </label>
                           <FileUploader fileName={(a as any).fileName} onFile={f => handleAutoFile(a.id, f)} required={requireAttachment} />
                         </div>
@@ -307,7 +335,7 @@ export default function StepActivities({ autonomous, guided, onChangeAutonomous,
                         <label style={lbl}>COMPROVANTE {requireAttachment
                           ? <span style={{ color: "#dc2626" }}>*</span>
                           : <span style={{ fontWeight: "400", color: "#94a3b8", textTransform: "none", letterSpacing: 0, fontSize: "11px" }}>(opcional)</span>}
-                          {" "}<span style={{ fontWeight: "400", color: "#94a3b8", textTransform: "none", letterSpacing: 0, fontSize: "11px" }}>— incluso no PDF</span>
+                          {" "}<span style={{ fontWeight: "400", color: "#94a3b8", textTransform: "none", letterSpacing: 0, fontSize: "11px" }}>— incluso no PDF · máx. {MAX_FILE_MB} MB</span>
                         </label>
                         <FileUploader fileName={g.fileName} onFile={f => handleGuidedFile(g.id, f)} accentColor="#0369a1" required={requireAttachment} />
                       </div>

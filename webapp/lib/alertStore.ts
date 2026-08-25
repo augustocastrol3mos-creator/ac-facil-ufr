@@ -3,7 +3,8 @@ import path from "path";
 import crypto from "crypto";
 
 const STORE_PATH = path.join(process.cwd(), "data", "alert.enc");
-const SECRET = "UFR_PROGRAD_ALERT_2026";
+// Chave de criptografia. Defina STORE_SECRET_ALERT no ambiente para não depender do padrão.
+const SECRET = process.env.STORE_SECRET_ALERT || "UFR_PROGRAD_ALERT_2026";
 const ALGORITHM = "aes-256-gcm";
 
 export type AlertConfig = {

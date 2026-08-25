@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { loadCategories } from "@/lib/categoryStore";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 const HOURS_PER_CREDIT = 16;
 const EMPRESA_JUNIOR_COMBINED_MAX = 4;
@@ -14,6 +15,15 @@ function extractEnrollmentYear(rga: string): number | null {
 }
 
 export async function POST(req: NextRequest) {
+  // Cálculo é barato, mas limitar evita abuso automatizado.
+  const limit = rateLimit("validate", clientIp(req), 60, 5 * 60 * 1000);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: `Muitas requisições. Aguarde ${Math.ceil(limit.retryAfterSec / 60)} minuto(s).` },
+      { status: 429 }
+    );
+  }
+
   try {
     const { student, autonomous, guided } = await req.json();
     const CATEGORY_CONFIG = loadCategories();

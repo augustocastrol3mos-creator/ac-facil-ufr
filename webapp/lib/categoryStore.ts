@@ -3,7 +3,8 @@ import path from "path";
 import crypto from "crypto";
 
 const STORE_PATH = path.join(process.cwd(), "data", "categories.enc");
-const SECRET = "UFR_PROGRAD_SECRET_2026_ADM";
+// Chave de criptografia. Defina STORE_SECRET_CATEGORIES no ambiente para não depender do padrão.
+const SECRET = process.env.STORE_SECRET_CATEGORIES || "UFR_PROGRAD_SECRET_2026_ADM";
 const ALGORITHM = "aes-256-gcm";
 
 // Default categories (same as validationService.ts CATEGORY_CONFIG)

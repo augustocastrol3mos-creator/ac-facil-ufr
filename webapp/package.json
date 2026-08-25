@@ -1,5 +1,5 @@
 {
-  "name": "webapp",
+  "name": "ac-facil-ufr",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -27,5 +27,9 @@
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "description": "AC Facil - Sistema de Atividades Complementares da UFR",
+  "engines": {
+    "node": ">=20"
   }
 }

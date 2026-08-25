@@ -6,6 +6,7 @@ import path from "path";
 import os from "os";
 import { loadCategories } from "@/lib/categoryStore";
 import { appendLog, type LogEntry } from "@/lib/logStore";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 import { PDFDocument } from "pdf-lib";
 
 async function mergeAttachments(mainPdfBytes: Buffer, entries: any[]): Promise<Uint8Array> {
@@ -45,6 +46,15 @@ async function mergeAttachments(mainPdfBytes: Buffer, entries: any[]): Promise<U
 }
 
 export async function POST(req: NextRequest) {
+  // Gerar PDF dispara um processo Python — limitar protege o serviço.
+  const limit = rateLimit("generate-pdf", clientIp(req), 20, 5 * 60 * 1000);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: `Muitas gerações seguidas. Aguarde ${Math.ceil(limit.retryAfterSec / 60)} minuto(s) e tente novamente.` },
+      { status: 429 }
+    );
+  }
+
   try {
     const { appData, result, type } = await req.json();
     const enrollmentYear = parseInt(appData.student.rga.substring(0, 4));
