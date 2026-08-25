@@ -2,10 +2,6 @@
 import { useState, useEffect } from "react";
 type LogEntry = { id: string; generatedAt: string; pdfType: string; totalCredits: number; totalHours: number; activities: any[]; guidedActivities: any[]; rejectedCount: number; };
 
-// Password is validated server-side. This is used for fetch request bodies only.
-// Validado no servidor. Usado apenas para os corpos das requisições fetch.
-const ADMIN_PASSWORD = "ufr@admin2026";
-
 type CategoryConfig = { label: string; creditsPerUnit: number; maxCredits: number; hoursPerCredit?: number; };
 type AppSettings = { requireAttachment: boolean; enforceMinHours: boolean; minAutonomousHours: number; };
 type AlertConfig = { enabled: boolean; message: string; type: "info" | "warning" | "success"; };
@@ -14,6 +10,9 @@ export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [pw, setPw] = useState("");
   const [pwError, setPwError] = useState("");
+  const [loggingIn, setLoggingIn] = useState(false);
+  // Senha validada no servidor; mantida apenas em memória durante a sessão.
+  const [sessionPw, setSessionPw] = useState("");
   const [activeTab, setActiveTab] = useState<"settings" | "categories" | "logs">("settings");
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
@@ -32,10 +31,27 @@ export default function AdminPage() {
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState("");
 
-  const login = () => {
-    if (pw === ADMIN_PASSWORD) { setAuthed(true); setPwError(""); }
-    else setPwError("Senha incorreta.");
+  const login = async () => {
+    setLoggingIn(true); setPwError("");
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pw }),
+      });
+      const d = await res.json();
+      if (!res.ok) { setPwError(d.error || "Senha incorreta."); return; }
+      setSessionPw(pw);   // guardada só em memória, para as requisições seguintes
+      setAuthed(true);
+      setPw("");
+    } catch {
+      setPwError("Erro de conexão. Tente novamente.");
+    } finally {
+      setLoggingIn(false);
+    }
   };
+
+  const logout = () => { setAuthed(false); setSessionPw(""); setPw(""); };
 
   useEffect(() => {
     if (!authed) return;
@@ -50,7 +66,7 @@ export default function AdminPage() {
   const saveCats = async () => {
     setSavingCats(true); setCatMsg("");
     try {
-      const res = await fetch("/api/admin/categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: ADMIN_PASSWORD, categories }) });
+      const res = await fetch("/api/admin/categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: sessionPw, categories }) });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error);
       setCatMsg("✓ Quadro de pontuações salvo com sucesso!");
@@ -61,7 +77,7 @@ export default function AdminPage() {
 
   const resetCats = async () => {
     if (!confirm("Restaurar os valores originais do Quadro I?")) return;
-    const res = await fetch("/api/admin/categories/reset", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: ADMIN_PASSWORD }) });
+    const res = await fetch("/api/admin/categories/reset", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: sessionPw }) });
     setCategories(await res.json());
     setCatMsg("✓ Valores restaurados para o padrão original.");
     setTimeout(() => setCatMsg(""), 4000);
@@ -70,7 +86,7 @@ export default function AdminPage() {
   const saveSettingsFn = async (newSettings: AppSettings) => {
     setSavingSettings(true); setSettingsMsg("");
     try {
-      const res = await fetch("/api/admin/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: ADMIN_PASSWORD, settings: newSettings }) });
+      const res = await fetch("/api/admin/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: sessionPw, settings: newSettings }) });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error);
       setSettingsMsg("✓ Configurações salvas!");
@@ -94,7 +110,7 @@ export default function AdminPage() {
   const saveAlertFn = async (newAlert: AlertConfig) => {
     setSavingAlert(true); setAlertMsg("");
     try {
-      const res = await fetch("/api/admin/alert", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: ADMIN_PASSWORD, alert: newAlert }) });
+      const res = await fetch("/api/admin/alert", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: sessionPw, alert: newAlert }) });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error);
       setAlertMsg("✓ Alerta salvo com sucesso!");
@@ -106,7 +122,7 @@ export default function AdminPage() {
   const fetchLogs = async () => {
     setLogsLoading(true);
     try {
-      const res = await fetch("/api/admin/logs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: ADMIN_PASSWORD }) });
+      const res = await fetch("/api/admin/logs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: sessionPw }) });
       const data = await res.json();
       setLogs(data);
     } catch { /* ignore */ }
@@ -140,7 +156,7 @@ export default function AdminPage() {
                 placeholder="Digite a senha" autoFocus
                 style={{ width: "100%", padding: "11px 13px", border: "1px solid #e2e8f0", borderRadius: "7px", fontSize: "14px", outline: "none", marginBottom: "8px" }} />
               {pwError && <p style={{ color: "#dc2626", fontSize: "12px", marginBottom: "10px" }}>⚠ {pwError}</p>}
-              <button onClick={login} style={{ width: "100%", padding: "12px", background: "#20376B", color: "white", border: "none", borderRadius: "7px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}>Acessar</button>
+              <button onClick={login} disabled={loggingIn || !pw} style={{ width: "100%", padding: "12px", background: (loggingIn || !pw) ? "#94a3b8" : "#20376B", color: "white", border: "none", borderRadius: "7px", fontSize: "14px", fontWeight: "700", cursor: (loggingIn || !pw) ? "not-allowed" : "pointer" }}>{loggingIn ? "Verificando..." : "Acessar"}</button>
               <div style={{ marginTop: "16px", textAlign: "center" }}>
                 <a href="/" style={{ fontSize: "12px", color: "#94a3b8", textDecoration: "none" }}>← Voltar ao sistema</a>
               </div>
@@ -168,7 +184,7 @@ export default function AdminPage() {
           </div>
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
             <a href="/" style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px", textDecoration: "none" }}>← Voltar</a>
-            <button onClick={() => setAuthed(false)}
+            <button onClick={logout}
               style={{ padding: "6px 14px", background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: "6px", color: "white", fontSize: "12px", cursor: "pointer" }}>
               Sair
             </button>
