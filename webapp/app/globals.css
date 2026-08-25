@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+:root {
+  /* UFR Brand Colors — Manual da Marca UFR */
+  --ufr-blue-dark:  #20376B;  /* Azul Escuro */
+  --ufr-blue-light: #0D6AB0;  /* Azul Claro */
+  --ufr-green:      #2d7a3a;  /* UI green (kept from previous) */
+  --ufr-green-dark: #1e5528;
+  --ufr-green-faint:#f0f7f1;
+  --ufr-gray:       #f1f5f9;
+  --ufr-border:     #e2e8f0;
+  --ufr-text:       #1D1D1B;  /* UFR Preto */
+  --ufr-text-muted: #64748b;
+  --ufr-white:      #ffffff;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+/* Manual da Marca UFR: fonte Arial */
+body {
+  background: var(--ufr-gray);
+  color: var(--ufr-text);
+  font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+input, select, button, textarea { font-family: inherit; }
+img { max-width: 100%; }
+select option { background: white; color: #1D1D1B; }

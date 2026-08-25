@@ -1,0 +1,46 @@
+{
+  "studentName": "Augusto",
+  "rga": "202200012345",
+  "course": "Administração",
+  "enrollmentYear": 2022,
+  "generatedAt": "02/05/2026, 16:34:02",
+  "result": {
+    "success": true,
+    "autonomousCredits": 10,
+    "autonomousHours": 160,
+    "guidedCredits": 2,
+    "guidedHours": 32,
+    "totalCredits": 12,
+    "totalHours": 192,
+    "breakdown": [
+      {
+        "category": "Artigo em Periódico Indexado",
+        "rawCredits": 4,
+        "cappedCredits": 4,
+        "hours": 64
+      },
+      {
+        "category": "Curso de Extensão ou Aperfeiçoamento",
+        "rawCredits": 3,
+        "cappedCredits": 3,
+        "hours": 48
+      },
+      {
+        "category": "Participação em Eventos Culturais/Científicos",
+        "rawCredits": 3,
+        "cappedCredits": 3,
+        "hours": 48
+      }
+    ],
+    "guidedBreakdown": [
+      {
+        "name": "Workshop de Inovação",
+        "semester": "2023/1",
+        "hours": 32,
+        "credits": 2,
+        "attachmentFileName": "workshop.pdf"
+      }
+    ],
+    "rejectedActivities": []
+  }
+}
